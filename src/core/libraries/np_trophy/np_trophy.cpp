@@ -156,8 +156,7 @@ int PS4_SYSV_ABI sceNpTrophyGetGameInfo(OrbisNpTrophyContext context, OrbisNpTro
 }
 
 int PS4_SYSV_ABI sceNpTrophyGetGroupIcon(OrbisNpTrophyContext context, OrbisNpTrophyHandle handle,
-                                         OrbisNpTrophyGroupId groupId, void* buffer,
-                                         size_t* size) {
+                                         OrbisNpTrophyGroupId groupId, void* buffer, size_t* size) {
     LOG_ERROR(Lib_NpTrophy, "(STUBBED) called");
     return ORBIS_OK;
 }
@@ -185,10 +184,9 @@ int PS4_SYSV_ABI sceNpTrophyGetTrophyInfo(OrbisNpTrophyContext context, OrbisNpT
 
 s32 PS4_SYSV_ABI sceNpTrophyGetTrophyUnlockState(OrbisNpTrophyContext context,
                                                  OrbisNpTrophyHandle handle,
-                                                 OrbisNpTrophyFlagArray* flags,
-                                                 u32* count) {
+                                                 OrbisNpTrophyFlagArray* flags, u32* count) {
     LOG_ERROR(Lib_NpTrophy, "(STUBBED) called");
-    //flags->flag_bits = 0u;
+    // flags->flag_bits = 0u;
     *count = 0;
     return ORBIS_OK;
 }

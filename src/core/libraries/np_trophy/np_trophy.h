@@ -154,8 +154,7 @@ int PS4_SYSV_ABI sceNpTrophyGetTrophyInfo(OrbisNpTrophyContext context, OrbisNpT
                                           OrbisNpTrophyData* data);
 s32 PS4_SYSV_ABI sceNpTrophyGetTrophyUnlockState(OrbisNpTrophyContext context,
                                                  OrbisNpTrophyHandle handle,
-                                                 OrbisNpTrophyFlagArray* flags,
-                                                 u32* count);
+                                                 OrbisNpTrophyFlagArray* flags, u32* count);
 int PS4_SYSV_ABI sceNpTrophyGroupArrayGetNum();
 int PS4_SYSV_ABI sceNpTrophyIntAbortHandle();
 int PS4_SYSV_ABI sceNpTrophyIntCheckNetSyncTitles();
@@ -170,11 +169,11 @@ int PS4_SYSV_ABI sceNpTrophyIntNetSyncTitle();
 int PS4_SYSV_ABI sceNpTrophyIntNetSyncTitles();
 int PS4_SYSV_ABI sceNpTrophyNumInfoGetTotal();
 int PS4_SYSV_ABI sceNpTrophyRegisterContext(OrbisNpTrophyContext context,
-                                            OrbisNpTrophyHandle handle,
-                                            uint64_t options);
+                                            OrbisNpTrophyHandle handle, uint64_t options);
 int PS4_SYSV_ABI sceNpTrophySetInfoGetTrophyFlagArray();
 int PS4_SYSV_ABI sceNpTrophySetInfoGetTrophyNum();
-int PS4_SYSV_ABI sceNpTrophyShowTrophyList(OrbisNpTrophyContext context, OrbisNpTrophyHandle handle);
+int PS4_SYSV_ABI sceNpTrophyShowTrophyList(OrbisNpTrophyContext context,
+                                           OrbisNpTrophyHandle handle);
 int PS4_SYSV_ABI sceNpTrophySystemAbortHandle();
 int PS4_SYSV_ABI sceNpTrophySystemBuildGroupIconUri();
 int PS4_SYSV_ABI sceNpTrophySystemBuildNetTrophyIconUri();
