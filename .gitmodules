@@ -85,3 +85,6 @@
 [submodule "externals/half"]
 	path = externals/half
 	url = https://github.com/ROCm/half.git
+[submodule "externals/pugixml"]
+	path = externals/pugixml
+	url = https://github.com/zeux/pugixml.git

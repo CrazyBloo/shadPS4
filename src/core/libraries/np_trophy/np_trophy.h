@@ -12,8 +12,10 @@ class SymbolsResolver;
 
 namespace Libraries::NpTrophy {
 
-#define ORBIS_NP_TROPHY_FLAG_SETSIZE (128)
-#define ORBIS_NP_TROPHY_FLAG_BITS_SHIFT (5)
+extern std::string game_serial;
+
+constexpr int ORBIS_NP_TROPHY_FLAG_SETSIZE = 128;
+constexpr int ORBIS_NP_TROPHY_FLAG_BITS_SHIFT = 5;
 
 constexpr int ORBIS_NP_TROPHY_GAME_TITLE_MAX_SIZE = 128;
 constexpr int ORBIS_NP_TROPHY_GAME_DESCR_MAX_SIZE = 1024;
@@ -31,11 +33,6 @@ typedef int32_t OrbisNpTrophyHandle;
 typedef int32_t OrbisNpTrophyContext;
 typedef int32_t OrbisNpTrophyId;
 typedef uint32_t OrbisNpTrophyFlagMask;
-
-struct OrbisNpTrophyScreenshotTarget {
-    OrbisNpTrophyContext context;
-    OrbisNpTrophyId trophyId;
-};
 
 struct OrbisNpTrophyFlagArray {
     OrbisNpTrophyFlagMask
@@ -119,9 +116,7 @@ struct OrbisNpTrophyGroupDetails {
 };
 
 int PS4_SYSV_ABI sceNpTrophyAbortHandle(OrbisNpTrophyHandle handle);
-int PS4_SYSV_ABI sceNpTrophyCaptureScreenshot(OrbisNpTrophyHandle handle,
-                                              OrbisNpTrophyScreenshotTarget* targets,
-                                              uint32_t numTargets);
+int PS4_SYSV_ABI sceNpTrophyCaptureScreenshot();
 int PS4_SYSV_ABI sceNpTrophyConfigGetTrophyDetails();
 int PS4_SYSV_ABI sceNpTrophyConfigGetTrophyFlagArray();
 int PS4_SYSV_ABI sceNpTrophyConfigGetTrophyGroupArray();
@@ -218,7 +213,7 @@ int PS4_SYSV_ABI sceNpTrophySystemRemoveUserData();
 int PS4_SYSV_ABI sceNpTrophySystemSetDbgParam();
 int PS4_SYSV_ABI sceNpTrophySystemSetDbgParamInt();
 int PS4_SYSV_ABI sceNpTrophyUnlockTrophy(OrbisNpTrophyContext context, OrbisNpTrophyHandle handle,
-                                         OrbisNpTrophyId trophyId, OrbisNpTrophyId platinumId);
+                                         OrbisNpTrophyId trophyId, OrbisNpTrophyId* platinumId);
 int PS4_SYSV_ABI Func_149656DA81D41C59();
 int PS4_SYSV_ABI Func_9F80071876FFA5F6();
 int PS4_SYSV_ABI Func_F8EF6F5350A91990();
