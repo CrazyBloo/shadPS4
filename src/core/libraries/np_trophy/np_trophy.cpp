@@ -4,8 +4,8 @@
 #include <unordered_map>
 
 #include "common/logging/log.h"
-#include "common/slot_vector.h"
 #include "common/path_util.h"
+#include "common/slot_vector.h"
 #include "core/libraries/error_codes.h"
 #include "core/libraries/libs.h"
 #include "externals/pugixml/src/pugixml.hpp"
@@ -540,16 +540,17 @@ int PS4_SYSV_ABI sceNpTrophyUnlockTrophy(OrbisNpTrophyContext context, OrbisNpTr
     const auto trophyDir =
         Common::FS::GetUserPath(Common::FS::PathType::MetaDataDir) / game_serial / "TrophyFiles";
 #else
-    const auto trophyDir = Common::FS::GetUserPath(Common::FS::PathType::MetaDataDir) /
-                                                   game_serial / "TrophyFiles";
+    const auto trophyDir =
+        Common::FS::GetUserPath(Common::FS::PathType::MetaDataDir) / game_serial / "TrophyFiles";
 #endif
 
     pugi::xml_document doc;
-    pugi::xml_parse_result result = doc.load_file((trophyDir.string() + "\\trophy00\\Xml\\TROP.XML").c_str());
+    pugi::xml_parse_result result =
+        doc.load_file((trophyDir.string() + "\\trophy00\\Xml\\TROP.XML").c_str());
 
-    //only do this if platinum is not unlocked
+    // only do this if platinum is not unlocked
     *platinumId = ORBIS_NP_TROPHY_INVALID_TROPHY_ID;
-    //check if all trophies are unlocked and if they are unlock plat and set its ID
+    // check if all trophies are unlocked and if they are unlock plat and set its ID
 
     if (result) {
         bool foundTrophy = false;
@@ -561,10 +562,12 @@ int PS4_SYSV_ABI sceNpTrophyUnlockTrophy(OrbisNpTrophyContext context, OrbisNpTr
             std::string childTrophyName = reinterpret_cast<const char*>(it->name());
             std::string childTrophyType =
                 reinterpret_cast<const char*>(it->attribute("ttype").value());
-            std::string childTrophyUnlockState = reinterpret_cast<const char*>(it->attribute("unlockstate").value());
+            std::string childTrophyUnlockState =
+                reinterpret_cast<const char*>(it->attribute("unlockstate").value());
 
             if (std::string(childTrophyName) == "trophy" && std::stoi(childTrophyId) == trophyId) {
-                LOG_INFO(Lib_NpTrophy, "Found trophy to unlock {} : {}", it->child("name").text().as_string(),
+                LOG_INFO(Lib_NpTrophy, "Found trophy to unlock {} : {}",
+                         it->child("name").text().as_string(),
                          it->child("detail").text().as_string());
                 if (childTrophyUnlockState == "unlocked") {
                     LOG_INFO(Lib_NpTrophy, "Trophy already unlocked");
@@ -575,7 +578,7 @@ int PS4_SYSV_ABI sceNpTrophyUnlockTrophy(OrbisNpTrophyContext context, OrbisNpTr
                     } else {
                         it->attribute("unlockstate").set_value("unlocked");
                     }
-                    
+
                     doc.save_file((trophyDir.string() + "\\trophy00\\Xml\\TROP.XML").c_str());
                 }
                 foundTrophy = true;
