@@ -4,9 +4,20 @@
 #include "common/logging/log.h"
 #include "core/libraries/error_codes.h"
 #include "core/libraries/libs.h"
+#include "core/libraries/kernel/libkernel.h"
+#include "core/libraries/kernel/thread_management.h"
 #include "core/libraries/network/http.h"
+#include "core/libraries/network/http_codes.h"
+#include "core/libraries/network/net.h"
 
 namespace Libraries::Http {
+
+Common::SlotVector<OrbisHttpTemplateSettings> templateSettings;
+Common::SlotVector<OrbisHttpConnectionSettings> connectionSettings;
+Common::SlotVector<OrbisHttpRequestSettings> requestSettings;
+
+// non-block is disabled by default
+std::vector<bool> nonBlockArray(100, false);
 
 int PS4_SYSV_ABI sceHttpAbortRequest() {
     LOG_ERROR(Lib_Http, "(STUBBED) called");
@@ -33,8 +44,9 @@ int PS4_SYSV_ABI sceHttpAddQuery() {
     return ORBIS_OK;
 }
 
-int PS4_SYSV_ABI sceHttpAddRequestHeader() {
-    LOG_ERROR(Lib_Http, "(STUBBED) called");
+int PS4_SYSV_ABI sceHttpAddRequestHeader(int id, const char* name, const char* value,
+                                         int32_t mode) {
+    LOG_INFO(Lib_Http, "Adding request header id={}, name={}, value={}, mode={}", id, name, value, mode);
     return ORBIS_OK;
 }
 
@@ -78,44 +90,77 @@ int PS4_SYSV_ABI sceHttpCookieImport() {
     return ORBIS_OK;
 }
 
-int PS4_SYSV_ABI sceHttpCreateConnection() {
+int PS4_SYSV_ABI sceHttpCreateConnection(int tmplId, const char* server, const char* scheme,
+                                         uint16_t port, bool enableKeepalive) {
+    LOG_INFO(Lib_Http,
+             "Creating Connection Settings tmplId={}, server={}, scheme={}, port={}, keepAlive={}",
+             tmplId, server, scheme, port, enableKeepalive);
+
+    OrbisHttpConnectionSettings newSettings;
+    newSettings.tmplId = tmplId;
+    newSettings.server = server;
+    newSettings.scheme = scheme;
+    newSettings.port = port;
+    newSettings.enableKeepalive = enableKeepalive;
+
+    return connectionSettings.insert(newSettings).index;
+}
+
+int PS4_SYSV_ABI sceHttpCreateConnectionWithURL(int tmplId, const char* url, bool enableKeepalive) {
     LOG_ERROR(Lib_Http, "(STUBBED) called");
     return ORBIS_OK;
 }
 
-int PS4_SYSV_ABI sceHttpCreateConnectionWithURL() {
+int PS4_SYSV_ABI sceHttpCreateEpoll(int libhttpCtxId, OrbisHttpEpollHandle* eh) {
+    LOG_INFO(Lib_Http, "Creating epoll handle");
+
+    return ORBIS_OK;
+}
+
+int PS4_SYSV_ABI sceHttpCreateRequest(int connId, int32_t method, const char* path,
+                                      uint64_t contentLength) {
+    LOG_INFO(Lib_Http, "Creating Request Settings connId={}, method={}, path={}, contentLength={}",
+             connId, method, path, contentLength);
+
+    OrbisHttpRequestSettings newSettings;
+    newSettings.connId = connId;
+    newSettings.method = method;
+    newSettings.path = path;
+    newSettings.contentLength = contentLength;
+
+    return requestSettings.insert(newSettings).index;
+}
+
+int PS4_SYSV_ABI sceHttpCreateRequest2(int connId, const char* method, const char* path,
+                                       uint64_t contentLength) {
     LOG_ERROR(Lib_Http, "(STUBBED) called");
     return ORBIS_OK;
 }
 
-int PS4_SYSV_ABI sceHttpCreateEpoll() {
+int PS4_SYSV_ABI sceHttpCreateRequestWithURL(int connId, int32_t method, const char* url,
+                                             uint64_t contentLength) {
     LOG_ERROR(Lib_Http, "(STUBBED) called");
     return ORBIS_OK;
 }
 
-int PS4_SYSV_ABI sceHttpCreateRequest() {
+int PS4_SYSV_ABI sceHttpCreateRequestWithURL2(int connId, const char* method, const char* url,
+                                              uint64_t contentLength) {
     LOG_ERROR(Lib_Http, "(STUBBED) called");
     return ORBIS_OK;
 }
 
-int PS4_SYSV_ABI sceHttpCreateRequest2() {
-    LOG_ERROR(Lib_Http, "(STUBBED) called");
-    return ORBIS_OK;
-}
+int PS4_SYSV_ABI sceHttpCreateTemplate(int libhttpCtxId, const char* userAgent, int httpVer,
+                                       int autoProxyConf) {
+    LOG_INFO(Lib_Http, "Creating Template Settings ctx={}, userAgent={}, httpVer={}, proxyConf={}",
+             libhttpCtxId, userAgent, httpVer, autoProxyConf);
 
-int PS4_SYSV_ABI sceHttpCreateRequestWithURL() {
-    LOG_ERROR(Lib_Http, "(STUBBED) called");
-    return ORBIS_OK;
-}
+    OrbisHttpTemplateSettings newSettings;
+    newSettings.libhttpCtxId = libhttpCtxId;
+    newSettings.userAgent = userAgent;
+    newSettings.httpVer = httpVer;
+    newSettings.autoProxyConf = autoProxyConf;
 
-int PS4_SYSV_ABI sceHttpCreateRequestWithURL2() {
-    LOG_ERROR(Lib_Http, "(STUBBED) called");
-    return ORBIS_OK;
-}
-
-int PS4_SYSV_ABI sceHttpCreateTemplate() {
-    LOG_ERROR(Lib_Http, "(STUBBED) called");
-    return ORBIS_OK;
+    return templateSettings.insert(newSettings).index;
 }
 
 int PS4_SYSV_ABI sceHttpDbgEnableProfile() {
@@ -158,18 +203,27 @@ int PS4_SYSV_ABI sceHttpDbgShowStat() {
     return ORBIS_OK;
 }
 
-int PS4_SYSV_ABI sceHttpDeleteConnection() {
-    LOG_ERROR(Lib_Http, "(STUBBED) called");
+int PS4_SYSV_ABI sceHttpDeleteConnection(int connId) {
+    LOG_INFO(Lib_Http, "Deleting Connection Settings {}", connId);
+
+    connectionSettings.erase(Common::SlotId(connId));
+
     return ORBIS_OK;
 }
 
-int PS4_SYSV_ABI sceHttpDeleteRequest() {
-    LOG_ERROR(Lib_Http, "(STUBBED) called");
+int PS4_SYSV_ABI sceHttpDeleteRequest(int reqId) {
+    LOG_INFO(Lib_Http, "Deleting request {}", reqId);
+
+    requestSettings.erase(Common::SlotId(reqId));
+
     return ORBIS_OK;
 }
 
-int PS4_SYSV_ABI sceHttpDeleteTemplate() {
-    LOG_ERROR(Lib_Http, "(STUBBED) called");
+int PS4_SYSV_ABI sceHttpDeleteTemplate(int templateId) {
+    LOG_INFO(Lib_Http, "Deleting template {}", templateId);
+
+    templateSettings.erase(Common::SlotId(templateId));
+
     return ORBIS_OK;
 }
 
@@ -238,8 +292,10 @@ int PS4_SYSV_ABI sceHttpGetMemoryPoolStats() {
     return ORBIS_OK;
 }
 
-int PS4_SYSV_ABI sceHttpGetNonblock() {
-    LOG_ERROR(Lib_Http, "(STUBBED) called");
+int PS4_SYSV_ABI sceHttpGetNonblock(int id, bool* enable) {
+    *enable = nonBlockArray[id];
+
+    LOG_INFO(Lib_Http, "Got nonblock state={}, for id {}", *enable, id);
     return ORBIS_OK;
 }
 
@@ -416,8 +472,14 @@ int PS4_SYSV_ABI sceHttpSetInflateGZIPEnabled() {
     return ORBIS_OK;
 }
 
-int PS4_SYSV_ABI sceHttpSetNonblock() {
-    LOG_ERROR(Lib_Http, "(STUBBED) called");
+int PS4_SYSV_ABI sceHttpSetNonblock(int id, bool enable) {
+    LOG_INFO(Lib_Http, "setting nonblock to {} for id {}", enable, id);
+
+    if (id > 100)
+        return ORBIS_HTTP_ERROR_INVALID_ID;
+
+    nonBlockArray[id] = enable;
+
     return ORBIS_OK;
 }
 
@@ -531,13 +593,13 @@ int PS4_SYSV_ABI sceHttpTerm() {
     return ORBIS_OK;
 }
 
-int PS4_SYSV_ABI sceHttpTryGetNonblock() {
-    LOG_ERROR(Lib_Http, "(STUBBED) called");
+int PS4_SYSV_ABI sceHttpTryGetNonblock(int id, bool* enable) {
+    LOG_ERROR(Lib_Http, "(STUBBED) called id={}, enable={}", id, *enable);
     return ORBIS_OK;
 }
 
-int PS4_SYSV_ABI sceHttpTrySetNonblock() {
-    LOG_ERROR(Lib_Http, "(STUBBED) called");
+int PS4_SYSV_ABI sceHttpTrySetNonblock(int id, bool enable) {
+    LOG_ERROR(Lib_Http, "(STUBBED) called id={}, enable={}");
     return ORBIS_OK;
 }
 
@@ -581,8 +643,10 @@ int PS4_SYSV_ABI sceHttpUriUnescape() {
     return ORBIS_OK;
 }
 
-int PS4_SYSV_ABI sceHttpWaitRequest() {
-    LOG_ERROR(Lib_Http, "(STUBBED) called");
+int PS4_SYSV_ABI sceHttpWaitRequest(OrbisHttpEpollHandle eh, OrbisHttpNBEvent* nbev, int maxevents,
+                                    int timeout_us) {
+    LOG_INFO(Lib_Http, "WaitRequest maxevents={}, timeout={}", maxevents, timeout_us);
+
     return ORBIS_OK;
 }
 
