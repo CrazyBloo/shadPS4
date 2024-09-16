@@ -183,3 +183,8 @@ add_subdirectory(tracy)
 if (NOT TARGET pugixml::pugixml)
     add_subdirectory(pugixml)
 endif()
+
+# httplib
+if (NOT TARGET httplib::httplib)
+    add_subdirectory(httplib)
+endif()
