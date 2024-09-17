@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: Copyright 2024 shadPS4 Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+#include <httplib.h>
+
 #include "common/logging/log.h"
 #include "core/libraries/error_codes.h"
 #include "core/libraries/libs.h"
@@ -98,21 +100,38 @@ int PS4_SYSV_ABI sceHttpCreateConnection(int tmplId, const char* server, const c
 
     OrbisHttpConnectionSettings newSettings;
     newSettings.tmplId = tmplId;
-    newSettings.server = server;
-    newSettings.scheme = scheme;
-    newSettings.port = port;
+
+    std::string url = scheme;
+    url.append("://");
+    url.append(server);
+    if (port != 0 && port <= 65535) {
+        url.append(":" + std::to_string(port));
+    }
+
+    newSettings.url = url.c_str();
     newSettings.enableKeepalive = enableKeepalive;
 
     return connectionSettings.insert(newSettings).index;
 }
 
 int PS4_SYSV_ABI sceHttpCreateConnectionWithURL(int tmplId, const char* url, bool enableKeepalive) {
-    LOG_ERROR(Lib_Http, "(STUBBED) called");
-    return ORBIS_OK;
+    LOG_INFO(Lib_Http,
+             "Creating Connection Settings tmplId={}, url={}, keepAlive={}",
+             tmplId, url, enableKeepalive);
+
+    OrbisHttpConnectionSettings newSettings;
+    newSettings.tmplId = tmplId;
+    newSettings.url = url;
+    newSettings.enableKeepalive = enableKeepalive;
+
+    return connectionSettings.insert(newSettings).index;
 }
 
 int PS4_SYSV_ABI sceHttpCreateEpoll(int libhttpCtxId, OrbisHttpEpollHandle* eh) {
     LOG_INFO(Lib_Http, "Creating epoll handle");
+
+    void* test;
+    *eh = test;
 
     return ORBIS_OK;
 }
@@ -133,8 +152,37 @@ int PS4_SYSV_ABI sceHttpCreateRequest(int connId, int32_t method, const char* pa
 
 int PS4_SYSV_ABI sceHttpCreateRequest2(int connId, const char* method, const char* path,
                                        uint64_t contentLength) {
-    LOG_ERROR(Lib_Http, "(STUBBED) called");
-    return ORBIS_OK;
+    LOG_INFO(Lib_Http, "Creating Request (2) connId={}, method={}, path={}, contentLength={}",
+             connId, method, path, contentLength);
+
+    std::string methodStr = method;
+
+    int methodValue = -1;
+
+    if (methodStr == "GET") {
+        methodValue = ORBIS_HTTP_METHOD_GET;
+    } else if (methodStr == "POST") {
+        methodValue = ORBIS_HTTP_METHOD_POST;
+    } else if (methodStr == "HEAD") {
+        methodValue = ORBIS_HTTP_METHOD_HEAD;
+    } else if (methodStr == "PUT") {
+        methodValue = ORBIS_HTTP_METHOD_PUT;
+    } else if (methodStr == "TRACE") {
+        methodValue = ORBIS_HTTP_METHOD_TRACE;
+    } else if (methodStr == "DELETE") {
+        methodValue = ORBIS_HTTP_METHOD_DELETE;
+    }
+
+    if (methodValue == -1)
+        return ORBIS_HTTP_ERROR_UNKNOWN_METHOD;
+
+    OrbisHttpRequestSettings newSettings;
+    newSettings.connId = connId;
+    newSettings.method = methodValue;
+    newSettings.path = path;
+    newSettings.contentLength = contentLength;
+
+    return requestSettings.insert(newSettings).index;
 }
 
 int PS4_SYSV_ABI sceHttpCreateRequestWithURL(int connId, int32_t method, const char* url,
@@ -372,7 +420,7 @@ int PS4_SYSV_ABI sceHttpsEnableOptionPrivate() {
     return ORBIS_OK;
 }
 
-int PS4_SYSV_ABI sceHttpSendRequest() {
+int PS4_SYSV_ABI sceHttpSendRequest(int reqId, const void* postData, size_t size) {
     LOG_ERROR(Lib_Http, "(STUBBED) called");
     return ORBIS_OK;
 }

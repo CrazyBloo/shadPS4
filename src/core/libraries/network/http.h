@@ -12,6 +12,27 @@ class SymbolsResolver;
 
 namespace Libraries::Http {
 
+enum OrbisHttpVersion { 
+    ORBIS_HTTP_VERSION_1_0 = 1,
+    ORBIS_HTTP_VERSION_1_1
+};
+
+enum OrbisHttpAddHeaderMode { 
+    ORBIS_HTTP_HEADER_OVERWRITE,
+    ORBIS_HTTP_HEADER_ADD
+};
+
+enum OrbisHttpMethods {
+    ORBIS_HTTP_METHOD_GET,
+    ORBIS_HTTP_METHOD_POST,
+    ORBIS_HTTP_METHOD_HEAD,
+    ORBIS_HTTP_METHOD_OPTIONS,
+    ORBIS_HTTP_METHOD_PUT,
+    ORBIS_HTTP_METHOD_DELETE,
+    ORBIS_HTTP_METHOD_TRACE,
+    ORBIS_HTTP_METHOD_CONNECT
+};
+
 struct OrbisHttpTemplateSettings {
 	int libhttpCtxId;
 	const char* userAgent;
@@ -21,9 +42,7 @@ struct OrbisHttpTemplateSettings {
 
 struct OrbisHttpConnectionSettings {
     int tmplId;
-    const char* server;
-    const char* scheme;
-    uint16_t port;
+    const char* url;
     bool enableKeepalive;
 };
 
@@ -110,7 +129,7 @@ int PS4_SYSV_ABI sceHttpsDisableOption();
 int PS4_SYSV_ABI sceHttpsDisableOptionPrivate();
 int PS4_SYSV_ABI sceHttpsEnableOption();
 int PS4_SYSV_ABI sceHttpsEnableOptionPrivate();
-int PS4_SYSV_ABI sceHttpSendRequest();
+int PS4_SYSV_ABI sceHttpSendRequest(int reqId, const void* postData, size_t size);
 int PS4_SYSV_ABI sceHttpSetAcceptEncodingGZIPEnabled();
 int PS4_SYSV_ABI sceHttpSetAuthEnabled();
 int PS4_SYSV_ABI sceHttpSetAuthInfoCallback();
