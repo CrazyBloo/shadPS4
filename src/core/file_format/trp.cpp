@@ -83,46 +83,38 @@ bool TRP::Extract(const std::filesystem::path& trophyPath, const std::string tit
                     LOG_INFO(Common_Filesystem, "Extracted icon : {}", name);
                 }
 
-                if (entry.flag == 3 && np_comm_id[0] == 'N' &&
-                    np_comm_id[1] == 'P') { // ESFM, encrypted.
-                    LOG_INFO(Common_Filesystem,
-                             "Attempting to extract trophy data | flag: {} | commId: {}{}",
-                             entry.flag.Raw(), np_comm_id[0], np_comm_id[1]);
-                    if (!file.Seek(entry.entry_pos)) {
-                        LOG_CRITICAL(Common_Filesystem, "Failed to seek to TRP entry offset");
-                        return false;
-                    }
-                    file.Read(esfmIv); // get iv key.
-                    LOG_INFO(Common_Filesystem, "Got esfm IV Key");
-                    // Skip the first 16 bytes which are the iv key on every entry as we want a
-                    // clean xml file.
-                    std::vector<u8> ESFM(entry.entry_len - iv_len);
-                    std::vector<u8> XML(entry.entry_len - iv_len);
-                    if (!file.Seek(entry.entry_pos + iv_len)) {
-                        LOG_CRITICAL(Common_Filesystem, "Failed to seek to TRP entry + iv offset");
-                        return false;
-                    }
-                    LOG_INFO(Common_Filesystem, "Got TRP Entry + IV Offset");
-                    LOG_INFO(Common_Filesystem, "Reading ESFM");
-                    file.Read(ESFM);
-                    LOG_INFO(Common_Filesystem, "Decrypting ESFM");
-                    crypto.decryptEFSM(np_comm_id, esfmIv, ESFM, XML); // decrypt
-                    LOG_INFO(Common_Filesystem, "Removing padding");
-                    removePadding(XML);
-                    std::string xml_name = entry.entry_name;
-                    LOG_INFO(Common_Filesystem, "Got entry name : {}", xml_name);
-                    size_t pos = xml_name.find("ESFM");
-                    if (pos != std::string::npos)
-                        xml_name.replace(pos, xml_name.length(), "XML");
-                    Common::FS::IOFile::WriteBytes(trpFilesPath / "Xml" / xml_name, XML);
-                    LOG_INFO(Common_Filesystem, "Writing xml file to {}/XML/{}",
-                             trpFilesPath.string(), xml_name);
-                } else {
-                    LOG_INFO(Common_Filesystem,
-                             "Couldnt decrypt trophy info | flag: {} | commid: {}{}",
-                             entry.flag.Raw(),
-                             np_comm_id[0], np_comm_id[1]);
+                LOG_INFO(Common_Filesystem,
+                         "Attempting to extract trophy data | flag: {} | commId: {}{}",
+                         entry.flag.Raw(), np_comm_id[0], np_comm_id[1]);
+                if (!file.Seek(entry.entry_pos)) {
+                    LOG_CRITICAL(Common_Filesystem, "Failed to seek to TRP entry offset");
+                    return false;
                 }
+                file.Read(esfmIv); // get iv key.
+                LOG_INFO(Common_Filesystem, "Got esfm IV Key");
+                // Skip the first 16 bytes which are the iv key on every entry as we want a
+                // clean xml file.
+                std::vector<u8> ESFM(entry.entry_len - iv_len);
+                std::vector<u8> XML(entry.entry_len - iv_len);
+                if (!file.Seek(entry.entry_pos + iv_len)) {
+                    LOG_CRITICAL(Common_Filesystem, "Failed to seek to TRP entry + iv offset");
+                    return false;
+                }
+                LOG_INFO(Common_Filesystem, "Got TRP Entry + IV Offset");
+                LOG_INFO(Common_Filesystem, "Reading ESFM");
+                file.Read(ESFM);
+                LOG_INFO(Common_Filesystem, "Decrypting ESFM");
+                crypto.decryptEFSM(np_comm_id, esfmIv, ESFM, XML); // decrypt
+                LOG_INFO(Common_Filesystem, "Removing padding");
+                removePadding(XML);
+                std::string xml_name = entry.entry_name;
+                LOG_INFO(Common_Filesystem, "Got entry name : {}", xml_name);
+                size_t pos = xml_name.find("ESFM");
+                if (pos != std::string::npos)
+                    xml_name.replace(pos, xml_name.length(), "XML");
+                Common::FS::IOFile::WriteBytes(trpFilesPath / "Xml" / xml_name, XML);
+                LOG_INFO(Common_Filesystem, "Writing xml file to {}/XML/{}", trpFilesPath.string(),
+                         xml_name);
             }
         }
         index++;
