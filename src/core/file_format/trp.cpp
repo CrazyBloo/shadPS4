@@ -35,6 +35,7 @@ static void removePadding(std::vector<u8>& vec) {
 bool TRP::Extract(const std::filesystem::path& trophyPath, const std::string titleId) {
     std::filesystem::path gameSysDir = trophyPath / "sce_sys/trophy/";
     if (!std::filesystem::exists(gameSysDir)) {
+        LOG_INFO(Common_Filesystem, "Couldnt find trp directory : {}", gameSysDir.c_str());
         return false;
     }
     for (int index = 0; const auto& it : std::filesystem::directory_iterator(gameSysDir)) {
@@ -58,7 +59,11 @@ bool TRP::Extract(const std::filesystem::path& trophyPath, const std::string tit
             std::filesystem::create_directories(trpFilesPath / "Icons");
             std::filesystem::create_directory(trpFilesPath / "Xml");
 
+            LOG_INFO(Common_Filesystem, "TRP Extracting to path {}", trpFilesPath.c_str());
+
             for (int i = 0; i < header.entry_num; i++) {
+                LOG_INFO(Common_Filesystem, "Iterating Entry {}", i);
+
                 if (!file.Seek(seekPos)) {
                     LOG_CRITICAL(Common_Filesystem, "Failed to seek to TRP entry offset");
                     return false;
@@ -75,14 +80,20 @@ bool TRP::Extract(const std::filesystem::path& trophyPath, const std::string tit
                     std::vector<u8> icon(entry.entry_len);
                     file.Read(icon);
                     Common::FS::IOFile::WriteBytes(trpFilesPath / "Icons" / name, icon);
+                    LOG_INFO(Common_Filesystem, "Extracted icon : {}", name);
                 }
+
                 if (entry.flag == 3 && np_comm_id[0] == 'N' &&
                     np_comm_id[1] == 'P') { // ESFM, encrypted.
+                    LOG_INFO(Common_Filesystem,
+                             "Attempting to extract trophy data | flag: {} | commId: {}{}",
+                             entry.flag, np_comm_id[0], np_comm_id[1]);
                     if (!file.Seek(entry.entry_pos)) {
                         LOG_CRITICAL(Common_Filesystem, "Failed to seek to TRP entry offset");
                         return false;
                     }
                     file.Read(esfmIv); // get iv key.
+                    LOG_INFO(Common_Filesystem, "Got esfm IV Key");
                     // Skip the first 16 bytes which are the iv key on every entry as we want a
                     // clean xml file.
                     std::vector<u8> ESFM(entry.entry_len - iv_len);
@@ -91,14 +102,24 @@ bool TRP::Extract(const std::filesystem::path& trophyPath, const std::string tit
                         LOG_CRITICAL(Common_Filesystem, "Failed to seek to TRP entry + iv offset");
                         return false;
                     }
+                    LOG_INFO(Common_Filesystem, "Got TRP Entry + IV Offset");
+                    LOG_INFO(Common_Filesystem, "Reading ESFM");
                     file.Read(ESFM);
+                    LOG_INFO(Common_Filesystem, "Decrypting ESFM");
                     crypto.decryptEFSM(np_comm_id, esfmIv, ESFM, XML); // decrypt
+                    LOG_INFO(Common_Filesystem, "Removing padding");
                     removePadding(XML);
                     std::string xml_name = entry.entry_name;
+                    LOG_INFO(Common_Filesystem, "Got entry name : {}", xml_name.c_str());
                     size_t pos = xml_name.find("ESFM");
                     if (pos != std::string::npos)
                         xml_name.replace(pos, xml_name.length(), "XML");
                     Common::FS::IOFile::WriteBytes(trpFilesPath / "Xml" / xml_name, XML);
+                    LOG_INFO(Common_Filesystem, "Writing xml file to {}/XML/{}", trpFilesPath.c_str(), xml_name.c_str());
+                } else {
+                    LOG_INFO(Common_Filesystem,
+                             "Couldnt decrypt trophy info | flag: {} | commid: {}{}", entry.flag,
+                             np_comm_id[0], np_comm_id[1]);
                 }
             }
         }
