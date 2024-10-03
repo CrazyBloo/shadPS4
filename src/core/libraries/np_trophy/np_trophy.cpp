@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <pugixml.hpp>
 
+#include "common/config.h"
 #include "common/logging/log.h"
 #include "common/path_util.h"
 #include "common/slot_vector.h"
@@ -940,7 +941,9 @@ int PS4_SYSV_ABI sceNpTrophyUnlockTrophy(OrbisNpTrophyContext context, OrbisNpTr
                     std::filesystem::path current_icon_path =
                         trophy_dir / "trophy00" / "Icons" / trophy_icon_file;
 
-                    AddTrophyToQueue(current_icon_path, current_trophy_name);
+                    if (Config::getTrophyUIEnabled()) {
+                        AddTrophyToQueue(current_icon_path, current_trophy_name);
+                    }
                 }
             }
         }
@@ -977,7 +980,9 @@ int PS4_SYSV_ABI sceNpTrophyUnlockTrophy(OrbisNpTrophyContext context, OrbisNpTr
                 trophy_dir / "trophy00" / "Icons" / platinum_icon_file;
 
             *platinumId = platinum_trophy_id;
-            AddTrophyToQueue(platinum_icon_path, platinum_trophy_name);
+            if (Config::getTrophyUIEnabled()) {
+                AddTrophyToQueue(platinum_icon_path, platinum_trophy_name);
+            }
         }
     }
 

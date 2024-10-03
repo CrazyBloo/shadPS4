@@ -13,6 +13,7 @@ void save(const std::filesystem::path& path);
 
 bool isNeoMode();
 bool isFullscreenMode();
+bool getTrophyUIEnabled();
 bool getPlayBGM();
 int getBGMvolume();
 
@@ -50,6 +51,7 @@ void setGpuId(s32 selectedGpuId);
 void setScreenWidth(u32 width);
 void setScreenHeight(u32 height);
 void setFullscreenMode(bool enable);
+void setTrophyUIEnabled(bool enable);
 void setPlayBGM(bool enable);
 void setBGMvolume(int volume);
 void setLanguage(u32 language);

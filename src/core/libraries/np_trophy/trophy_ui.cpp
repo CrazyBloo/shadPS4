@@ -5,6 +5,7 @@
 #include <mutex>
 #include <imgui.h>
 #include "common/assert.h"
+#include "common/config.h"
 #include "common/singleton.h"
 #include "imgui/imgui_std.h"
 #include "trophy_ui.h"
@@ -38,28 +39,31 @@ void TrophyUI::Finish() {
 void TrophyUI::Draw() {
     const auto& io = GetIO();
 
+    float width_multiplier = io.DisplaySize.x / 1280.f;
+    float height_multiplier = io.DisplaySize.y / 720.f;
+
     const ImVec2 window_size{
-        std::min(io.DisplaySize.x, 250.f),
-        std::min(io.DisplaySize.y, 70.f),
+        std::min(io.DisplaySize.x, (250.f * width_multiplier)),
+        std::min(io.DisplaySize.y, (70.f * height_multiplier)),
     };
 
     SetNextWindowSize(window_size);
     SetNextWindowCollapsed(false);
-    SetNextWindowPos(ImVec2(io.DisplaySize.x - 250, 50));
+    SetNextWindowPos(ImVec2(io.DisplaySize.x - (250.f * width_multiplier), (50.f * height_multiplier)));
     KeepNavHighlight();
 
     if (Begin("Trophy Window", nullptr,
               ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoSavedSettings |
                   ImGuiWindowFlags_NoInputs)) {
         if (trophy_icon) {
-            Image(trophy_icon.GetTexture().im_id, ImVec2(50, 50));
+            Image(trophy_icon.GetTexture().im_id, ImVec2(50.f * width_multiplier, 50.f * height_multiplier));
             ImGui::SameLine();
         } else {
             // placeholder
             const auto pos = GetCursorScreenPos();
             ImGui::GetWindowDrawList()->AddRectFilled(pos, pos + ImVec2{50.0f},
                                                       GetColorU32(ImVec4{0.7f}));
-            ImGui::Indent(60);
+            ImGui::Indent(60.f * width_multiplier);
         }
         TextWrapped("Trophy earned!\n%s", trophy_name.c_str());
     }
