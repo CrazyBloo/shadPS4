@@ -32,7 +32,10 @@ namespace Config {
 
 static bool isNeo = false;
 static bool isFullscreen = false;
-static bool trophyUIEnabled = false;
+static bool trophyUIEnabled = true;
+static u32 trophyUIWidth = 250;
+static u32 trophyUIHeight = 70;
+static u32 trophyUIIconSize = 50;
 static bool playBGM = false;
 static int BGMvolume = 50;
 static u32 screenWidth = 1280;
@@ -91,6 +94,18 @@ bool isFullscreenMode() {
 
 bool getTrophyUIEnabled() {
     return trophyUIEnabled;
+}
+
+u32 getTrophyUIWidth() {
+    return trophyUIWidth;
+}
+
+u32 getTrophyUIHeight() {
+    return trophyUIHeight;
+}
+
+u32 getTrophyUIIconSize() {
+    return trophyUIIconSize;
 }
 
 bool getPlayBGM() {
@@ -259,6 +274,18 @@ void setFullscreenMode(bool enable) {
 
 void setTrophyUIEnabled(bool enable) {
     trophyUIEnabled = enable;
+}
+
+void setTrophyUIWidth(u32 value) {
+    trophyUIWidth = value;
+}
+
+void setTrophyUIHeight(u32 value) {
+    trophyUIHeight = value;
+}
+
+void setTrophyUIIconSize(u32 value) {
+    trophyUIIconSize = value;
 }
 
 void setPlayBGM(bool enable) {
@@ -441,7 +468,10 @@ void load(const std::filesystem::path& path) {
 
         isNeo = toml::find_or<bool>(general, "isPS4Pro", false);
         isFullscreen = toml::find_or<bool>(general, "Fullscreen", false);
-        trophyUIEnabled = toml::find_or<bool>(general, "trophyUI", true);
+        trophyUIEnabled = toml::find_or<bool>(general, "trophyUIEnabled", true);
+        trophyUIWidth = toml::find_or<u32>(general, "trophyUIWidth", 250);
+        trophyUIHeight = toml::find_or<u32>(general, "trophyUIHeight", 70);
+        trophyUIIconSize = toml::find_or<u32>(general, "trophyUIIconSize", 50);
         playBGM = toml::find_or<bool>(general, "playBGM", false);
         BGMvolume = toml::find_or<int>(general, "BGMvolume", 50);
         logFilter = toml::find_or<std::string>(general, "logFilter", "");
@@ -545,7 +575,10 @@ void save(const std::filesystem::path& path) {
 
     data["General"]["isPS4Pro"] = isNeo;
     data["General"]["Fullscreen"] = isFullscreen;
-    data["General"]["trophyUI"] = trophyUIEnabled;
+    data["General"]["trophyUIEnabled"] = trophyUIEnabled;
+    data["General"]["trophyUIWidth"] = trophyUIWidth;
+    data["General"]["trophyUIHeight"] = trophyUIHeight;
+    data["General"]["trophyUIIconSize"] = trophyUIIconSize;
     data["General"]["playBGM"] = playBGM;
     data["General"]["BGMvolume"] = BGMvolume;
     data["General"]["logFilter"] = logFilter;
@@ -602,6 +635,9 @@ void setDefaultValues() {
     isNeo = false;
     isFullscreen = false;
     trophyUIEnabled = true;
+    trophyUIHeight = 70;
+    trophyUIWidth = 250;
+    trophyUIIconSize = 50;
     playBGM = false;
     BGMvolume = 50;
     screenWidth = 1280;

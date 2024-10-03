@@ -39,31 +39,37 @@ void TrophyUI::Finish() {
 void TrophyUI::Draw() {
     const auto& io = GetIO();
 
+    float windowWidth = Config::getTrophyUIWidth();
+    float windowHeight = Config::getTrophyUIHeight();
     float width_multiplier = io.DisplaySize.x / 1280.f;
     float height_multiplier = io.DisplaySize.y / 720.f;
 
+    float iconSize = Config::getTrophyUIIconSize();
+
     const ImVec2 window_size{
-        std::min(io.DisplaySize.x, (250.f * width_multiplier)),
-        std::min(io.DisplaySize.y, (70.f * height_multiplier)),
+        std::min(io.DisplaySize.x, (windowWidth * width_multiplier)),
+        std::min(io.DisplaySize.y, (windowHeight * height_multiplier)),
     };
 
     SetNextWindowSize(window_size);
     SetNextWindowCollapsed(false);
-    SetNextWindowPos(ImVec2(io.DisplaySize.x - (250.f * width_multiplier), (50.f * height_multiplier)));
+    SetNextWindowPos(ImVec2(io.DisplaySize.x - (windowWidth * width_multiplier),
+                            (windowHeight * height_multiplier)));
     KeepNavHighlight();
 
     if (Begin("Trophy Window", nullptr,
               ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoSavedSettings |
                   ImGuiWindowFlags_NoInputs)) {
         if (trophy_icon) {
-            Image(trophy_icon.GetTexture().im_id, ImVec2(50.f * width_multiplier, 50.f * height_multiplier));
+            Image(trophy_icon.GetTexture().im_id,
+                  ImVec2(iconSize * width_multiplier, iconSize * height_multiplier));
             ImGui::SameLine();
         } else {
             // placeholder
             const auto pos = GetCursorScreenPos();
-            ImGui::GetWindowDrawList()->AddRectFilled(pos, pos + ImVec2{50.0f},
+            ImGui::GetWindowDrawList()->AddRectFilled(pos, pos + ImVec2{iconSize},
                                                       GetColorU32(ImVec4{0.7f}));
-            ImGui::Indent(60.f * width_multiplier);
+            ImGui::Indent((iconSize + 10.f) * width_multiplier);
         }
         TextWrapped("Trophy earned!\n%s", trophy_name.c_str());
     }
