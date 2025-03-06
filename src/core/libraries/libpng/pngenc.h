@@ -19,7 +19,7 @@ struct OrbisPngEncCreateParam {
 };
 
 struct OrbisPngEncEncodeParam {
-    const void* image_mem_addr;
+    void* image_mem_addr;
     void* png_mem_addr;
     uint32_t image_mem_size;
     uint32_t png_mem_size;
@@ -39,7 +39,38 @@ struct OrbisPngEncOutputInfo {
     uint32_t processed_height;
 };
 
+struct OrbisPngEncoderInfo {
+    uintptr_t self_address;
+    u64 this_size;
+    u32 image_width;
+    u32 max_filters;
+    u32 image_size;
+};
+
 using OrbisPngEncHandle = void*;
+
+enum OrbisPngEncAttribute {
+    ORBIS_PNG_ENC_ATTRIBUTE_NONE = 0
+};
+
+enum OrbisPngEncColorSpace {
+    ORBIS_PNG_ENC_COLOR_SPACE_RGB = 3,
+    ORBIS_PNG_ENC_COLOR_SPACE_RGBA = 19
+};
+
+enum OrbisPngEncPixelFormat {
+    ORBIS_PNG_ENC_PIXEL_FORMAT_R8G8B8A8 = 0,
+    ORBIS_PNG_ENC_PIXEL_FORMAT_B8G8R8A8 = 1
+};
+
+enum OrbisPngEncFilterType {
+    ORBIS_PNG_ENC_FILTER_TYPE_NONE = 0,
+    ORBIS_PNG_ENC_FILTER_TYPE_SUB = 1,
+    ORBIS_PNG_ENC_FILTER_TYPE_UP = 2,
+    ORBIS_PNG_ENC_FILTER_TYPE_AVG = 4,
+    ORBIS_PNG_ENC_FILTER_TYPE_PAETH = 8,
+    ORBIS_PNG_ENC_FILTER_TYPE_ALL = 15
+};
 
 s32 PS4_SYSV_ABI scePngEncCreate(const OrbisPngEncCreateParam* param, void* memoryAddress,
                                  uint32_t memorySize, OrbisPngEncHandle* handle);

@@ -37,6 +37,7 @@
 #include "core/linker.h"
 #include "core/memory.h"
 #include "emulator.h"
+#include "core/libraries/libpng/pngenc.h"
 #include "video_core/renderdoc.h"
 
 Frontend::WindowSDL* g_window = nullptr;
@@ -285,7 +286,7 @@ void Emulator::Run(const std::filesystem::path& file, const std::vector<std::str
 }
 
 void Emulator::LoadSystemModules(const std::string& game_serial) {
-    constexpr std::array<SysModules, 11> ModulesToLoad{
+    constexpr std::array<SysModules, 12> ModulesToLoad{
         {{"libSceNgs2.sprx", &Libraries::Ngs2::RegisterlibSceNgs2},
          {"libSceUlt.sprx", nullptr},
          {"libSceJson.sprx", nullptr},
@@ -293,6 +294,7 @@ void Emulator::LoadSystemModules(const std::string& game_serial) {
          {"libSceLibcInternal.sprx", &Libraries::LibcInternal::RegisterlibSceLibcInternal},
          {"libSceDiscMap.sprx", &Libraries::DiscMap::RegisterlibSceDiscMap},
          {"libSceRtc.sprx", &Libraries::Rtc::RegisterlibSceRtc},
+         {"libScePngEnc.sprx", &Libraries::PngEnc::RegisterlibScePngEnc},
          {"libSceCesCs.sprx", nullptr},
          {"libSceFont.sprx", nullptr},
          {"libSceFontFt.sprx", nullptr},
